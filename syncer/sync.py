@@ -5,8 +5,19 @@ import python_pachyderm as pach
 import json
 from azureml.core import Workspace, Dataset, Datastore, Experiment
 from azureml.core.authentication import MsiAuthentication
+from azureml.data import DataType
+
 import base64
 import requests
+
+## Temp set datatypes for CSV
+data_types = {
+       'RM': DataType.to_float(),
+       'LSTAT': DataType.to_float(),
+       'PTRATIO': DataType.to_float(),
+       'MEDV': DataType.to_float(),
+       'test_feature': DataType.to_float()
+}
 
 # Track Pachyderm commits that have been propagated
 # repo -> commit -> (dataset, version)
@@ -119,7 +130,8 @@ def update_repos():
                 elif mode == "delimited":
                     ds_new = Dataset.Tabular.from_delimited_files(
                         validate=False,
-                        # TODO support TSV as well
+                        infer_column_types=False,
+                        set_column_types=data_types,
                         path=[(datastore, f"{commit}.master.{repo}/**/*.csv")],
                     )
                     register_new_dataset_version(ds_new, mode, repo, commit)
